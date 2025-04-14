@@ -1,0 +1,14 @@
+<h1>Repositório: {{ name }}</h1>
+<a href="/upload/{{ name }}">Fazer upload</a>
+<ul>
+  {% for commit in commits|reverse %}
+    <li>
+      <strong>{{ commit.version }}</strong> – {{ commit.message }}
+      <ul>
+        {% for file in commit.files %}
+          <li><a href="/download/{{ name }}/{{ commit.version }}/{{ file }}">{{ file }}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
