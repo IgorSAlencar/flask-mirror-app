@@ -13,9 +13,9 @@ os.makedirs(BASE_DIR, exist_ok=True)
 # Configurações do mirror
 UPSTREAM_REPO = os.environ.get(
     'UPSTREAM_REPO',
-    'https://github.com/IgorSAlencar/bradesco-express-gestao-pro.git'
+    'https://github.com/IgorSAlencar/gestao-comercial.git'
 )
-UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'bradesco-express-gestao-pro')
+UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'gestao-comercial')
 
 def save_commit(repo_name, files, message):
     repo_path = os.path.join(BASE_DIR, repo_name)
