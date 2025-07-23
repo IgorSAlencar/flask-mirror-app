@@ -76,7 +76,7 @@ def download_file(repo, version, filename):
     path = os.path.join(BASE_DIR, repo, version)
     return send_from_directory(path, filename, as_attachment=True)
 
-@app.route('/mirror')
+@app.route('/mirror_')
 def mirror():
     local_path = os.path.join(BASE_DIR, UPSTREAM_NAME)
     # limpa execuções anteriores
