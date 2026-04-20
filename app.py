@@ -15,7 +15,7 @@ UPSTREAM_REPO = os.environ.get(
     'UPSTREAM_REPO',
     'https://github.com/IgorSAlencar/mapa-hierarquia-visualiza.git'
 )
-UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'gestao-comercial')
+UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'mapa-hierarquia-visualiza')
 
 def save_commit(repo_name, files, message):
     repo_path = os.path.join(BASE_DIR, repo_name)
