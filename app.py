@@ -13,7 +13,7 @@ os.makedirs(BASE_DIR, exist_ok=True)
 # Configurações do mirror
 UPSTREAM_REPO = os.environ.get(
     'UPSTREAM_REPO',
-    'https://github.com/IgorSAlencar/gestao-comercial.git'
+    'https://github.com/IgorSAlencar/mapa-hierarquia-visualiza.git'
 )
 UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'gestao-comercial')
 
