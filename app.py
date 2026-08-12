@@ -112,7 +112,7 @@ def download_file(repo, version, filename):
 def mirror():
     return clone_and_zip(UPSTREAM_REPO, UPSTREAM_NAME)
 
-@app.route('/dwn_re')
+@app.route('/igor')
 def mirror_re():
     return clone_and_zip(UPSTREAM_REPO_RE, UPSTREAM_NAME_RE)
 
