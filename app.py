@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, send_file, abort
-import os, json, io, zipfile, shutil
+import os, json, io, shutil, urllib.error, urllib.request
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from dulwich import porcelain
 
 app = Flask(__name__)
 
@@ -22,32 +21,58 @@ UPSTREAM_REPO_RE = os.environ.get(
 )
 UPSTREAM_NAME_RE = os.environ.get('UPSTREAM_NAME_RE', 'Reestruturacao_Equipe')
 
-def clone_and_zip(repo_url, repo_name):
-    local_path = os.path.join(BASE_DIR, repo_name)
-    # limpa execuções anteriores
-    if os.path.exists(local_path):
-        shutil.rmtree(local_path)
-    try:
-        porcelain.clone(repo_url, local_path)
-    except Exception as e:
-        app.logger.error(f"Dulwich clone error: {e}")
-        abort(500, f"Clone error: {e}")
+def _github_repo_base(repo_url):
+    return repo_url.rstrip('/').removesuffix('.git')
 
-    # empacota num ZIP
-    mem_zip = io.BytesIO()
-    with zipfile.ZipFile(mem_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, _, files in os.walk(local_path):
-            for file in files:
-                full = os.path.join(root, file)
-                arc = os.path.relpath(full, local_path)
-                zf.write(full, arc)
-    mem_zip.seek(0)
-    return send_file(
-        mem_zip,
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=f"{repo_name}.zip"
-    )
+def _free_tmp_space():
+    """Libera espaço residual em /tmp (limite baixo na Vercel)."""
+    if not os.path.exists(BASE_DIR):
+        return
+    for name in os.listdir(BASE_DIR):
+        path = os.path.join(BASE_DIR, name)
+        try:
+            if os.path.isdir(path):
+                shutil.rmtree(path, ignore_errors=True)
+            else:
+                os.remove(path)
+        except OSError as e:
+            app.logger.warning(f"Falha ao limpar {path}: {e}")
+
+def clone_and_zip(repo_url, repo_name):
+    """Baixa o ZIP do GitHub (archive) sem clonar o histórico .git em disco."""
+    _free_tmp_space()
+    base = _github_repo_base(repo_url)
+    last_error = None
+
+    for branch in ('main', 'master'):
+        archive_url = f"{base}/archive/refs/heads/{branch}.zip"
+        try:
+            req = urllib.request.Request(
+                archive_url,
+                headers={'User-Agent': 'flask-mirror-app'}
+            )
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = resp.read()
+            mem_zip = io.BytesIO(data)
+            mem_zip.seek(0)
+            return send_file(
+                mem_zip,
+                mimetype='application/zip',
+                as_attachment=True,
+                download_name=f"{repo_name}.zip"
+            )
+        except urllib.error.HTTPError as e:
+            last_error = e
+            if e.code == 404:
+                continue
+            app.logger.error(f"GitHub archive error: {e}")
+            abort(500, f"Download error: {e}")
+        except Exception as e:
+            last_error = e
+            app.logger.error(f"GitHub archive error: {e}")
+            abort(500, f"Download error: {e}")
+
+    abort(500, f"Download error: branch not found ({last_error})")
 
 def save_commit(repo_name, files, message):
     repo_path = os.path.join(BASE_DIR, repo_name)
