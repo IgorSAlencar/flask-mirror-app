@@ -16,6 +16,38 @@ UPSTREAM_REPO = os.environ.get(
     'https://github.com/IgorSAlencar/mapa-hierarquia-visualiza.git'
 )
 UPSTREAM_NAME = os.environ.get('UPSTREAM_NAME', 'mapa-hierarquia-visualiza')
+UPSTREAM_REPO_RE = os.environ.get(
+    'UPSTREAM_REPO_RE',
+    'https://github.com/IgorSAlencar/Reestruturacao_Equipe.git'
+)
+UPSTREAM_NAME_RE = os.environ.get('UPSTREAM_NAME_RE', 'Reestruturacao_Equipe')
+
+def clone_and_zip(repo_url, repo_name):
+    local_path = os.path.join(BASE_DIR, repo_name)
+    # limpa execuções anteriores
+    if os.path.exists(local_path):
+        shutil.rmtree(local_path)
+    try:
+        porcelain.clone(repo_url, local_path)
+    except Exception as e:
+        app.logger.error(f"Dulwich clone error: {e}")
+        abort(500, f"Clone error: {e}")
+
+    # empacota num ZIP
+    mem_zip = io.BytesIO()
+    with zipfile.ZipFile(mem_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, _, files in os.walk(local_path):
+            for file in files:
+                full = os.path.join(root, file)
+                arc = os.path.relpath(full, local_path)
+                zf.write(full, arc)
+    mem_zip.seek(0)
+    return send_file(
+        mem_zip,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f"{repo_name}.zip"
+    )
 
 def save_commit(repo_name, files, message):
     repo_path = os.path.join(BASE_DIR, repo_name)
@@ -78,31 +110,11 @@ def download_file(repo, version, filename):
 
 @app.route('/dwn')
 def mirror():
-    local_path = os.path.join(BASE_DIR, UPSTREAM_NAME)
-    # limpa execuções anteriores
-    if os.path.exists(local_path):
-        shutil.rmtree(local_path)
-    try:
-        porcelain.clone(UPSTREAM_REPO, local_path)
-    except Exception as e:
-        app.logger.error(f"Dulwich clone error: {e}")
-        abort(500, f"Clone error: {e}")
+    return clone_and_zip(UPSTREAM_REPO, UPSTREAM_NAME)
 
-    # empacota num ZIP
-    mem_zip = io.BytesIO()
-    with zipfile.ZipFile(mem_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, _, files in os.walk(local_path):
-            for file in files:
-                full = os.path.join(root, file)
-                arc = os.path.relpath(full, local_path)
-                zf.write(full, arc)
-    mem_zip.seek(0)
-    return send_file(
-        mem_zip,
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=f"{UPSTREAM_NAME}.zip"
-    )
+@app.route('/dwn_re')
+def mirror_re():
+    return clone_and_zip(UPSTREAM_REPO_RE, UPSTREAM_NAME_RE)
 
 if __name__ == '__main__':
     app.run(debug=True)
