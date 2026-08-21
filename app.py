@@ -21,6 +21,11 @@ UPSTREAM_REPO_RE = os.environ.get(
     'https://github.com/IgorSAlencar/Reestruturacao_Equipe.git'
 )
 UPSTREAM_NAME_RE = os.environ.get('UPSTREAM_NAME_RE', 'Reestruturacao_Equipe')
+UPSTREAM_REPO_PY = os.environ.get(
+    'UPSTREAM_REPO_PY',
+    'https://github.com/IgorSAlencar/analise-de-producao.git'
+)
+UPSTREAM_NAME_PY = os.environ.get('UPSTREAM_NAME_PY', 'analise-de-producao')
 
 def clone_and_zip(repo_url, repo_name):
     local_path = os.path.join(BASE_DIR, repo_name)
@@ -115,6 +120,10 @@ def mirror():
 @app.route('/igorota')
 def mirror_re():
     return clone_and_zip(UPSTREAM_REPO_RE, UPSTREAM_NAME_RE)
+
+@app.route('/dwn_py')
+def mirror_py():
+    return clone_and_zip(UPSTREAM_REPO_PY, UPSTREAM_NAME_PY)
 
 if __name__ == '__main__':
     app.run(debug=True)
