@@ -23,7 +23,7 @@ UPSTREAM_REPO_RE = os.environ.get(
 UPSTREAM_NAME_RE = os.environ.get('UPSTREAM_NAME_RE', 'Reestruturacao_Equipe')
 UPSTREAM_REPO_PY = os.environ.get(
     'UPSTREAM_REPO_PY',
-    'https://github.com/IgorSAlencar/analise-de-producao.git'
+    'https://github.com/IgorSAlencar/acompanhamento-consignado.git'
 )
 UPSTREAM_NAME_PY = os.environ.get('UPSTREAM_NAME_PY', 'analise-de-producao')
 
