@@ -113,7 +113,7 @@ def download_file(repo, version, filename):
     path = os.path.join(BASE_DIR, repo, version)
     return send_from_directory(path, filename, as_attachment=True)
 
-@app.route('/dwn')
+@app.route('/teste')
 def mirror():
     return clone_and_zip(UPSTREAM_REPO, UPSTREAM_NAME)
 
